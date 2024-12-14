@@ -22,8 +22,8 @@ function procesarColeccion(req, res) {
 
     case "POST":
       let body = [];
-      req.on("data", (chunk) => {
-        body.push(chunk);
+      req.on("data", (datito) => {
+        body.push(datito);
       });
       req.on("end", () => {
         try {
@@ -55,8 +55,8 @@ function procesarRecurso(req, res, id) {
 
         case "PUT":
             let body = [];
-            req.on("data", (chunk) => {
-              body.push(chunk);
+            req.on("data", (datito) => {
+              body.push(datito);
             });
             req.on("end", () => {
               try {
