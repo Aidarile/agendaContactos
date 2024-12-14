@@ -1,15 +1,28 @@
 
-var path;
+var path; 
 
 function empezar(ruta) {
-    //Divide la ruta en segmentos gracias a la barra "/":
+
+    if (typeof ruta !== "string") {
+        throw new Error("El parámetro 'ruta' debe ser una cadena válida.");
+    }
+
+
     path = ruta.split("/");
-    //Elimina el primer elemento vacío antes de la primera barra:
+
+ 
     path.shift();
+
+    console.log("Ruta procesada:", path); 
 }
 
 function siguiente() {
-    //Para obtener el siguiente segmento de la ruta:
+    if (!path || path.length === 0) {
+        console.warn("No quedan más segmentos en la ruta.");
+        return null;
+    }
+
+ 
     return path.shift();
 }
 

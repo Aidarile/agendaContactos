@@ -1,109 +1,102 @@
 
-//Importar el modulo de "datos":
 const datos = require("./datos");
 
-function procesarPeticion(res, res, restoRuta) {
-    //Para obtener el ID del contacto si está en la ruta:
-    const id = restoRuta.siguiente();
+function procesarPeticion(req, res, moduloRutas) {
+  const id = moduloRutas.siguiente();
 
-    if (id) {
-        //Procesa un recurso especifico (por el ID del contacto):
-        procesarRecurso(req, res, id);
-    } else {
-        //Procesa la colección completa (todos los contactos):
-        procesarColeccion(req, res);
-    }
+  if (id) {
+    procesarRecurso(req, res, parseInt(id));
+  } else {
+    procesarColeccion(req, res);
+  }
 }
+
 function procesarColeccion(req, res) {
-    console.log("Contactos procesando coleccion (sin parametros)");
-    switch(req.method) {
-        case "GET":
-        //Devolver la lista completa de contactos:
-        const contactos = datos.listaContactos();
-        respuestaOK(res, contactos);
-        break;
+  console.log("Contactos procesando colección (sin parámetros)");
 
-        case "POST":
-        //Añade un nuevo contacto:
-        const nuevoContacto = [];
-        req.on("data", (data) => {
-            nuevoContacto.push(data);
-        });
-        req.on("end", () => {
-            const objetoContacto = JSON.parse(Buffer.concat(nuevoContacto).toString());
-            datos.agregarContacto(objetoContacto);
-            respuestaOK(res, "Contacto añadido correctamente");   
-        });
-        break;
+  switch (req.method) {
+    case "GET":
+      const contactos = datos.listarContactos();
+      respuestaOK(res, contactos);
+      break;
 
-        default:
-            respuestaError(res, "Metodo no disponible", 405);
-            break;
-    }
+    case "POST":
+      let body = [];
+      req.on("data", (chunk) => {
+        body.push(chunk);
+      });
+      req.on("end", () => {
+        try {
+          const nuevoContacto = JSON.parse(Buffer.concat(body).toString());
+          datos.agregarContacto(nuevoContacto);
+          respuestaOK(res, "Contacto agregado correctamente");
+        } catch (err) {
+          respuestaError(res, "Error al procesar la solicitud", 400);
+        }
+      });
+      break;
+
+    default:
+      respuestaError(res, "Metodo no soportado", 405);
+      break;
+  }
 }
 
 function procesarRecurso(req, res, id) {
-    console.log("Contactos procesando recurso (Contacto = " + id + ")");
-    //Buscar contacto por su ID:
-    const contacto = datos.obtenerContactoPorId(Number(id));
+  console.log("Contactos procesando recurso (Contacto = " + id + ")");
 
-    if (contacto) {
-        switch(req.method) {
-            case "GET":
-            //Devuelve los detalles del contacto:
-            respuestaOK(res, contacto);
-            break;
+  const contacto = datos.obtenerContactoPorId(id);
 
-            case "PUT":
-            //Modifica un contacto existente:
-            let datosActualizados = [];
-            req.on("data", (data) => {
-                datosActualizados.push(data);
+  if (contacto) {
+    switch (req.method) {
+      case "GET":
+        respuestaOK(res, contacto);
+        break;
+
+        case "PUT":
+            let body = [];
+            req.on("data", (chunk) => {
+              body.push(chunk);
+            });
+            req.on("end", () => {
+              try {
+                const datosActualizados = JSON.parse(Buffer.concat(body).toString());
+                datos.actualizarContacto(id, datosActualizados);
+                respuestaOK(res, `Contacto con ID ${id} actualizado`);
+              } catch (err) {
+                respuestaError(res, "Error procesando el cuerpo de la solicitud", 400);
+              }
             });
             break;
-
-            case "DELETE":
-            //Eliminar un contacto:
-            datos.eliminarContacto(Number(id));
-            respuestaOK(res, "Contacto eliminado correctamente");
+    
+          case "DELETE":
+            datos.eliminarContacto(id);
+            respuestaOK(res, `Contacto con ID ${id} eliminado`);
             break;
 
-            default:
-            respuestaError(res, "Metodo no disponible", 405);
-        }
-    } else {
-        respuestaError(res, "Contacto no encontrado", 404);
+      default:
+        respuestaError(res, "Método no soportado", 405);
+        break;
     }
+  } else {
+    respuestaError(res, `Contacto con ID ${id} no encontrado`, 404);
+  }
 }
 
-module.exports = {
-    procesarPeticion,
-};
+function respuestaOK(res, datos) {
+  res.statusCode = 200;
+  res.setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify({ 
+    status: "ok", 
+    data: datos }));
+}
 
-//Funciones para las respuestas de OK y ERROR:
+function respuestaError(res, mensaje, codigo) {
+  res.statusCode = codigo;
+  res.setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify({ 
+    status: "error", 
+    error: mensaje }));
+}
 
-function respuestaOK(res, respuesta) {
-    console.log(respuesta)
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "application/json");
-    res.write(
-      JSON.stringify({
-        "status": "ok",
-        "data": respuesta,
-      })
-    );
-    res.end();
-  }
-  
-  function respuestaError(res, mensajeError, codigo) {
-    res.statusCode = codigo;
-    res.setHeader("Content-Type", "application/json");
-    res.write(
-      JSON.stringify({
-        "status": "error",
-        "error": mensajeError,
-      })
-    );
-    res.end();
-  }
-
+module.exports = { procesarPeticion };
