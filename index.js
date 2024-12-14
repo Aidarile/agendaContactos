@@ -34,14 +34,14 @@ const miServidor = http.createServer((req, res) => {
         res.write(
           JSON.stringify({
             status: "error",
-            error: "ruta no válida",
+            error: "ruta no valida",
           })
         );
         res.end();
         break;
     }
   } catch (error) {
-    console.error("Error procesando la petición:", error.message);
+    console.error("Error procesando la peticion:", error.message);
     res.statusCode = 500;
     res.setHeader("Content-Type", "application/json");
     res.write(

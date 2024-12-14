@@ -12,7 +12,7 @@ function procesarPeticion(req, res, moduloRutas) {
 }
 
 function procesarColeccion(req, res) {
-  console.log("Contactos procesando colección (sin parámetros)");
+  console.log("Contactos procesando coleccion (sin parametros)");
 
   switch (req.method) {
     case "GET":
@@ -75,7 +75,7 @@ function procesarRecurso(req, res, id) {
             break;
 
       default:
-        respuestaError(res, "Método no soportado", 405);
+        respuestaError(res, "Metodo no soportado", 405);
         break;
     }
   } else {

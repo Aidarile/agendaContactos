@@ -4,7 +4,7 @@ var path;
 function empezar(ruta) {
 
     if (typeof ruta !== "string") {
-        throw new Error("El parámetro 'ruta' debe ser una cadena válida.");
+        throw new Error("El parametro 'ruta' debe ser una cadena valida.");
     }
 
 
@@ -18,7 +18,7 @@ function empezar(ruta) {
 
 function siguiente() {
     if (!path || path.length === 0) {
-        console.warn("No quedan más segmentos en la ruta.");
+        console.warn("No quedan mas segmentos en la ruta.");
         return null;
     }
 
